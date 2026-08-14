@@ -3,93 +3,786 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Nordic Spin v2</title>
+<title>Nordic Spin</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#283753,#0b1019 70%);color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
-.app{width:min(500px,100%);margin:auto;padding:14px 12px 30px}h1{text-align:center;margin:4px 0;font-size:31px;letter-spacing:1px}.sub{text-align:center;color:#aeb9ca;font-size:12px;margin-bottom:12px}
-.card{background:#1a2435;border:1px solid #3a4961;border-radius:22px;padding:12px;box-shadow:0 15px 45px #0008}
-.top{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}.stat{background:#0e1623;border-radius:12px;padding:8px;text-align:center}.lab{font-size:9px;color:#8997aa;display:block}.val{font-weight:900;font-size:17px}
-.machine{margin-top:10px;background:#080d15;border-radius:16px;padding:8px;border:2px solid #4a5870}.reels{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(3,66px);gap:5px}
-.cell{background:linear-gradient(#f7f3e9,#ded8c8);color:#142033;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:28px;position:relative}
-.cell.win{box-shadow:inset 0 0 0 3px #f4c542,0 0 10px #f4c542}.wild{background:linear-gradient(#dff7ff,#9ddbf0)}.scatter{background:linear-gradient(#f8e4ff,#d4a3e8)}
-.controls{display:grid;grid-template-columns:auto 1fr auto;gap:7px;margin-top:10px}select,button{border:0;border-radius:12px;padding:12px;font:inherit}select{background:#0e1623;color:#fff}.spin{background:#f4c542;color:#16120a;font-size:20px;font-weight:900}.reset{background:#3c4a60;color:#fff}.bonus{display:none;text-align:center;background:#36294b;border-radius:14px;margin-top:10px;padding:12px}.bonus.show{display:block}.bonus button{background:#f4c542;font-weight:900;margin-top:7px}
-.msg{text-align:center;min-height:26px;font-weight:800;margin:10px 0 2px}.pay{margin-top:10px;background:#0e1623;border-radius:13px;padding:9px;font-size:12px}.pay div{display:flex;justify-content:space-between;padding:3px}
-.note{text-align:center;color:#778499;font-size:10px;margin-top:10px;line-height:1.4}
+:root{--gold:#ffc52f;--ice:#5fdcff;--red:#ff3d2f;--bg:#03070c}
+*{box-sizing:border-box}
+html,body{
+margin:0;
+background:#03070c;
+color:#fff;
+font-family:Arial,Helvetica,sans-serif
+}
+body{
+display:flex;
+justify-content:center;
+min-height:100vh
+}
+.app{
+width:min(1200px,100%);
+min-height:100vh;
+background:radial-gradient(circle at 50% 18%,#1c2c3d 0,#07111b 34%,#020509 78%);
+padding:8px
+}
+.header{
+height:74px;
+display:flex;
+align-items:center;
+justify-content:center;
+position:relative
+}
+.logo{
+font-weight:1000;
+font-size:clamp(32px,7vw,66px);
+letter-spacing:2px;
+line-height:.8;
+color:#d8e0e7;
+text-shadow:3px 4px 0 #202a32,0 0 18px #6edfff55
+}
+.logo span{
+display:block;
+color:#e32c1f;
+font-style:italic;
+font-size:.55em;
+letter-spacing:1px;
+margin-top:8px;
+transform:rotate(-4deg)
+}
+.icon{
+position:absolute;
+top:10px;
+width:44px;
+height:44px;
+border:1px solid #596a7c;
+background:#080d14;
+border-radius:50%;
+display:grid;
+place-items:center;
+font-size:22px
+}
+.left{left:8px}
+.right{right:8px}
+
+.game{
+position:relative;
+display:grid;
+grid-template-columns:92px 1fr 92px;
+gap:8px;
+align-items:stretch;
+max-width:1160px;
+margin:auto
+}
+.side{
+display:flex;
+flex-direction:column;
+gap:8px
+}
+.box{
+background:linear-gradient(180deg,#101a25,#070c12);
+border:2px solid #4d5d6b;
+border-radius:9px;
+padding:12px 6px;
+text-align:center;
+box-shadow:inset 0 0 0 1px #111
+}
+.box small{
+display:block;
+color:#e0bd55;
+font-size:12px;
+font-weight:800
+}
+.box b{
+display:block;
+font-size:23px;
+margin-top:7px
+}
+.ice{color:var(--ice)!important}
+.red{color:#ff5749!important}
+
+.reelFrame{
+background:linear-gradient(145deg,#596b7b,#141c25 14%,#080b10 50%,#566777);
+border:3px solid #687b8c;
+border-radius:13px;
+padding:8px;
+box-shadow:0 15px 35px #000c
+}
+.reels{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+grid-template-rows:repeat(3,1fr);
+gap:4px;
+background:#020407;
+border:2px solid #18222c;
+padding:5px;
+border-radius:7px
+}
+.cell{
+min-height:110px;
+background:linear-gradient(150deg,#111a22,#26323b 48%,#0c1117);
+border:1px solid #53636d;
+border-radius:4px;
+display:flex;
+align-items:center;
+justify-content:center;
+position:relative;
+overflow:hidden;
+font-size:clamp(30px,5vw,58px);
+font-weight:900;
+text-shadow:0 3px 4px #000
+}
+.cell:after{
+content:"";
+position:absolute;
+inset:0;
+background:linear-gradient(120deg,#fff1 0,transparent 25%,transparent 75%,#fff1);
+pointer-events:none
+}
+.letter{
+font-family:Georgia,serif;
+font-size:clamp(38px,6vw,66px);
+color:#cbd5dc;
+text-shadow:2px 3px 0 #000
+}
+.redletter{color:#b84635}
+.greenletter{color:#75a14d}
+.blueletter{color:#64a7b5}
+
+.wild{
+background:radial-gradient(circle,#f5b51d,#6b3d05 72%);
+border-color:#d79a21;
+font-size:clamp(25px,4vw,45px);
+color:#fff1bd
+}
+.scatter{
+background:radial-gradient(circle,#9a54cf,#241035 70%);
+border-color:#c36bff
+}
+.win{
+outline:4px solid var(--gold);
+box-shadow:0 0 24px var(--gold);
+animation:pulse .25s infinite alternate
+}
+@keyframes pulse{
+to{
+filter:brightness(1.5);
+transform:scale(1.025)
+}
+}
+
+.controls{
+display:grid;
+grid-template-columns:1.2fr 1.2fr 1.2fr 1.6fr 1fr;
+gap:7px;
+margin-top:8px
+}
+.ctrl{
+background:linear-gradient(#141d27,#070b10);
+border:2px solid #445463;
+border-radius:9px;
+padding:9px;
+text-align:center
+}
+.ctrl small{
+display:block;
+color:#bda652;
+font-size:10px
+}
+.ctrl b{
+font-size:16px
+}
+.spin{
+border-radius:50%;
+aspect-ratio:1;
+background:radial-gradient(circle,#f4d16a 0,#8e5a0b 45%,#1b1110 60%,#f45a22 63%,#141414 70%);
+border:5px solid #111;
+color:white;
+font-size:26px;
+font-weight:1000;
+box-shadow:0 0 25px #ff6a25aa
+}
+.spin:active{
+transform:scale(.96)
+}
+.betrow{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:8px
+}
+.betrow button{
+width:30px;
+height:30px;
+border-radius:50%;
+border:1px solid #667;
+background:#101822;
+color:#fff;
+font-weight:900
+}
+button{
+cursor:pointer
+}
+
+.showcase{
+display:grid;
+grid-template-columns:1fr 1fr 1fr;
+gap:8px;
+margin-top:10px
+}
+.feature{
+min-height:150px;
+border:2px solid #263743;
+border-radius:8px;
+background:linear-gradient(135deg,#0a0f14,#171d22);
+padding:10px;
+position:relative;
+overflow:hidden;
+text-align:center
+}
+.feature h3{
+margin:0;
+font-size:22px;
+font-style:italic
+}
+.big{
+color:#f33;
+text-shadow:0 0 10px #f30
+}
+.blue{color:#35bfe8}
+.epic{color:#ff4c32}
+.feature .demo{
+font-size:35px;
+margin-top:16px
+}
+.feature strong{
+font-size:28px;
+color:#ffcf43;
+display:block;
+margin-top:7px
+}
+
+.rules{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+margin-top:8px;
+border:1px solid #273641;
+background:#080d12
+}
+.rule{
+padding:9px;
+border-right:1px solid #273641;
+text-align:center;
+font-size:10px;
+color:#9aabb8
+}
+.rule b{
+display:block;
+color:#fff;
+font-size:12px;
+margin-bottom:4px
+}
+.footer{
+text-align:center;
+border-top:1px solid #26333e;
+margin-top:8px;
+padding:8px;
+color:#a9b4bd;
+font-size:12px
+}
+.footer span{
+color:#ff4d3e
+}
+.msg{
+text-align:center;
+height:25px;
+padding:5px;
+font-weight:900;
+color:#ffd34b
+}
+
+@media(max-width:700px){
+.app{padding:4px}
+.header{height:65px}
+.game{
+grid-template-columns:48px 1fr 48px;
+gap:4px
+}
+.box{padding:8px 2px}
+.box small{font-size:8px}
+.box b{font-size:13px}
+.cell{
+min-height:70px;
+font-size:25px
+}
+.letter{font-size:31px}
+.controls{
+grid-template-columns:1fr 1fr 1.2fr
+}
+.ctrl:nth-child(4){display:none}
+.ctrl:nth-child(5){display:none}
+.spin{font-size:18px}
+.showcase{grid-template-columns:1fr}
+.feature{min-height:105px}
+.rules{grid-template-columns:repeat(2,1fr)}
+.rule:nth-child(n+3){display:none}
+}
 </style>
 </head>
+
 <body>
 <div class="app">
-<h1>NORDIC SPIN</h1><div class="sub">v2 • 5×3 • låtsaspengar</div>
-<div class="card">
-<div class="top">
-<div class="stat"><span class="lab">SALDO</span><span id="balance" class="val">1 000 kr</span></div>
-<div class="stat"><span class="lab">INSATS</span><span id="betText" class="val">10 kr</span></div>
-<div class="stat"><span class="lab">FREE SPINS</span><span id="fs" class="val">0</span></div>
+
+<header class="header">
+<button class="icon left">☰</button>
+
+<div class="logo">
+NORDIC
+<span>SPIN</span>
 </div>
-<div class="machine"><div id="grid" class="reels"></div></div>
+
+<button class="icon right">🔊</button>
+</header>
+
+<section class="game">
+
+<aside class="side">
+
+<div class="box">
+<small>WAYS</small>
+<b>1024</b>
+</div>
+
+<div class="box">
+<small>WIN</small>
+<b id="lastWin">0.00</b>
+</div>
+
+<div class="box">
+<small class="ice">MULTIPLIER</small>
+<b id="multi" class="ice">×1</b>
+</div>
+
+</aside>
+
+<main>
+
+<div class="reelFrame">
+<div id="reels" class="reels"></div>
+</div>
+
 <div class="controls">
-<select id="bet"><option value="5">5 kr</option><option value="10" selected>10 kr</option><option value="20">20 kr</option><option value="50">50 kr</option></select>
-<button id="reset" class="reset">↻</button><button id="spin" class="spin">SPIN</button>
+
+<div class="ctrl">
+<small>BALANCE</small>
+<b id="balance">10 250.00</b>
 </div>
-<div id="bonus" class="bonus"><b>🎁 FREE SPINS!</b><br><span id="bonusText"></span><br><button id="continue">Fortsätt</button></div>
-<div id="msg" class="msg">Tryck SPIN</div>
-<div class="pay">
-<div><span>🍒 🍒 🍒</span><b>2×</b></div><div><span>🍋 🍋 🍋</span><b>4×</b></div>
-<div><span>⭐ ⭐ ⭐</span><b>8×</b></div><div><span>💎 💎 💎</span><b>15×</b></div>
-<div><span>7️⃣ 7️⃣ 7️⃣</span><b>50×</b></div><div><span>🟣 SCATTER ×3</span><b>+5 FREE</b></div>
-</div></div>
-<div class="note">Prototyp för spelmekanik. Ingen riktig insats, betalning eller uttag.</div>
+
+<div class="ctrl">
+<small>BET</small>
+
+<div class="betrow">
+<button id="minus">−</button>
+<b id="bet">20.00</b>
+<button id="plus">+</button>
 </div>
+
+</div>
+
+<div class="ctrl">
+<button id="spin" class="spin">↻</button>
+</div>
+
+<div class="ctrl">
+<small>TOTAL WIN</small>
+<b id="totalWin">325.00</b>
+</div>
+
+<div class="ctrl">
+<small>FREE SPINS</small>
+<b id="free">7 / 10</b>
+</div>
+
+</div>
+
+<div id="msg" class="msg">
+READY TO SPIN
+</div>
+
+</main>
+
+<aside class="side">
+
+<div class="box">
+<small class="ice">FREE</small>
+<small class="ice">SPINS</small>
+<b id="freeSide">7/10</b>
+</div>
+
+<div class="box">
+<small>MAX WIN</small>
+<b>5000×</b>
+</div>
+
+</aside>
+
+</section>
+
+<section class="showcase">
+
+<div class="feature">
+<h3 class="big">BIG WIN</h3>
+<div class="demo">🃏 🃏 🃏</div>
+<strong>3 240.00</strong>
+<small>×8 MULTIPLIER</small>
+</div>
+
+<div class="feature">
+<h3 class="blue">FREE SPINS</h3>
+<div class="demo">🃏 🃏 🃏</div>
+<strong>7 FS</strong>
+<small>EXPANDING WILDS • ×5</small>
+</div>
+
+<div class="feature">
+<h3 class="epic">EPIC WIN</h3>
+<div class="demo">⚔️ 🔥 ⚔️</div>
+<strong>15 870.00</strong>
+<small>EPIC MOMENT</small>
+</div>
+
+</section>
+
+<section class="rules">
+
+<div class="rule">
+<b>🃏 WILD</b>
+Substitutes for all symbols except Scatter.
+</div>
+
+<div class="rule">
+<b>🟣 SCATTER</b>
+3+ triggers Free Spins.
+</div>
+
+<div class="rule">
+<b>🪓 TUMBLE</b>
+Winning symbols disappear and new symbols fall.
+</div>
+
+<div class="rule">
+<b>🃏 NUDGE WILDS</b>
+Wilds can move during Free Spins.
+</div>
+
+<div class="rule">
+<b>MAX WIN</b>
+5,000× bet.
+</div>
+
+</section>
+
+<div class="footer">
+RTP: 96.00% &nbsp; | &nbsp;
+VOLATILITY: <span>HIGH</span> &nbsp; | &nbsp;
+MAX WIN: <span>5,000×</span>
+</div>
+
+</div>
+
 <script>
-const S=[
-{s:"🍒",w:34,m:2},{s:"🍋",w:28,m:4},{s:"⭐",w:18,m:8},
-{s:"💎",w:10,m:15},{s:"7️⃣",w:5,m:50},{s:"WILD",w:3,m:0},{s:"SCATTER",w:2,m:0}
+
+const symbols=[
+{s:"🐦",m:2,w:30},
+{s:"🪓",m:4,w:25},
+{s:"⚔️",m:8,w:18},
+{s:"👑",m:15,w:11},
+{s:"🛡️",m:30,w:7},
+{s:"WILD",m:0,w:5},
+{s:"SCATTER",m:0,w:4}
 ];
-const paylines=[
-[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],
-[0,1,2,1,0],[2,1,0,1,2],[0,0,1,2,2],[2,2,1,0,0],
-[1,0,0,0,1],[1,2,2,2,1],[0,1,1,1,2]
+
+const lines=[
+[1,1,1,1,1],
+[0,0,0,0,0],
+[2,2,2,2,2],
+[0,1,2,1,0],
+[2,1,0,1,2],
+[0,0,1,2,2],
+[2,2,1,0,0],
+[1,0,0,0,1],
+[1,2,2,2,1],
+[0,1,1,1,2]
 ];
-let balance=1000,free=0,busy=false,locked=false;
+
+let balance=10250;
+let bet=20;
+let total=325;
+let multi=1;
+let free=7;
+let busy=false;
+let grid=[];
+
 const $=x=>document.getElementById(x);
-function pick(){let r=Math.random()*100;for(const x of S){r-=x.w;if(r<=0)return x}return S[0]}
-function money(n){return Math.round(n).toLocaleString("sv-SE")+" kr"}
-function update(){$("balance").textContent=money(balance);$("betText").textContent=money(+$("bet").value);$("fs").textContent=free}
-function draw(grid,wins=[]){
- let out="";for(let r=0;r<3;r++)for(let c=0;c<5;c++){let x=grid[r][c],cl="cell";if(x.s==="WILD")cl+=" wild";if(x.s==="SCATTER")cl+=" scatter";if(wins.some(p=>p[0]===r&&p[1]===c))cl+=" win";out+=`<div class="${cl}">${x.s==="WILD"?"🃏":x.s==="SCATTER"?"🟣":x.s}</div>`}$("grid").innerHTML=out
+
+function pick(){
+
+let r=Math.random()*100;
+
+for(const x of symbols){
+
+r-=x.w;
+
+if(r<=0)return x;
+
 }
-function randomGrid(){return Array.from({length:3},()=>Array.from({length:5},pick))}
-let grid=randomGrid();draw(grid);update();
-$("bet").onchange=update;
-$("reset").onclick=()=>{balance=1000;free=0;busy=false;locked=false;$("bonus").classList.remove("show");$("spin").disabled=false;$("msg").textContent="Tryck SPIN";grid=randomGrid();draw(grid);update()}
-function evaluate(g,bet){
- let win=0,positions=[],sc=0;
- g.flat().forEach(x=>{if(x.s==="SCATTER")sc++});
- paylines.forEach(line=>{
-  let first=null,count=0;
-  for(let c=0;c<5;c++){let x=g[line[c]][c];if(x.s==="SCATTER")break;
-   if(x.s==="WILD"|| (first && x.s===first.s)){count++;if(!first)first=x}
-   else if(!first){first=x;count=1}else break}
-  if(count>=3&&first&&first.s!=="WILD"){win+=bet*first.m*(count===4?1.5:count===5?3:1);for(let c=0;c<count;c++)positions.push([line[c],c])}
- });
- return {win:Math.floor(win),sc,positions}
+
+return symbols[0];
+
 }
-function spin(){
- if(busy||locked)return;
- const bet=+$("bet").value;
- if(free===0&&balance<bet){$("msg").textContent="För lite saldo.";return}
- if(free===0)balance-=bet;else free--;
- update();busy=true;$("spin").disabled=true;$("msg").textContent=free>0?"Free Spin…":"Snurrar…";
- let n=0,t=setInterval(()=>{grid=randomGrid();draw(grid);if(++n>=14){clearInterval(t);finish(bet)}},65)
+
+function make(){
+
+return Array.from(
+{length:3},
+()=>Array.from(
+{length:5},
+pick
+)
+);
+
 }
-function finish(bet){
- const result=evaluate(grid,bet);
- let win=result.win;
- if(win>0){balance+=win;draw(grid,result.positions);$("msg").textContent="🎉 Vinst "+money(win)+"!"}else $("msg").textContent="Ingen vinst.";
- if(result.sc>=3){free+=5;locked=true;$("bonusText").textContent="Du fick 5 Free Spins!";$("bonus").classList.add("show")}
- busy=false;$("spin").disabled=false;update();
+
+function draw(g,wins=[],spin=false){
+
+let h="";
+
+for(let r=0;r<3;r++){
+
+for(let c=0;c<5;c++){
+
+let x=g[r][c];
+let cl="cell";
+
+if(x.s==="WILD")
+cl+=" wild";
+
+else if(x.s==="SCATTER")
+cl+=" scatter";
+
+else
+cl+=" letter";
+
+if(wins.some(p=>p[0]===r&&p[1]===c))
+cl+=" win";
+
+if(spin)
+cl+=" shake";
+
+h+=`<div class="${cl}">
+${x.s==="WILD"?"🃏":x.s==="SCATTER"?"🟣":x.s}
+</div>`;
+
 }
-$("spin").onclick=spin;
-$("continue").onclick=()=>{$("bonus").classList.remove("show");locked=false;$("msg").textContent="Free Spins redo!";if(free>0)setTimeout(spin,250)}
+
+}
+
+$("reels").innerHTML=h;
+
+}
+
+function evaluate(g){
+
+let win=0;
+let wins=[];
+let sc=0;
+
+g.flat().forEach(x=>{
+if(x.s==="SCATTER")sc++;
+});
+
+for(const line of lines){
+
+let first=null;
+let n=0;
+
+for(let c=0;c<5;c++){
+
+let x=g[line[c]][c];
+
+if(x.s==="SCATTER")
+break;
+
+if(!first && x.s!=="WILD"){
+
+first=x;
+n=1;
+
+}
+
+else if(
+x.s==="WILD" ||
+(first && x.s===first.s)
+){
+
+n++;
+
+}
+
+else break;
+
+}
+
+if(first && n>=3){
+
+win+=
+bet*
+first.m*
+(n===3?1:n===4?1.5:3)*
+multi;
+
+for(let c=0;c<n;c++)
+wins.push([line[c],c]);
+
+}
+
+}
+
+return {
+win:Math.floor(win),
+wins,
+sc
+};
+
+}
+
+function update(){
+
+$("balance").textContent=balance.toFixed(2);
+
+$("bet").textContent=bet.toFixed(2);
+
+$("totalWin").textContent=total.toFixed(2);
+
+$("lastWin").textContent="0.00";
+
+$("multi").textContent="×"+multi;
+
+$("free").textContent=free+" / 10";
+
+$("freeSide").textContent=free+"/10";
+
+}
+
+grid=make();
+
+draw(grid);
+
+$("minus").onclick=()=>{
+
+bet=Math.max(10,bet-10);
+
+update();
+
+};
+
+$("plus").onclick=()=>{
+
+bet=Math.min(100,bet+10);
+
+update();
+
+};
+
+$("spin").onclick=()=>{
+
+if(busy)
+return;
+
+if(free<=0 && balance<bet)
+return;
+
+if(free>0)
+free--;
+else
+balance-=bet;
+
+update();
+
+busy=true;
+
+$("spin").disabled=true;
+
+$("msg").textContent="SPINNING…";
+
+let i=0;
+
+let t=setInterval(()=>{
+
+grid=make();
+
+draw(grid,[],true);
+
+if(++i>=15){
+
+clearInterval(t);
+
+resolve(0);
+
+}
+
+},65);
+
+};
+
+function resolve(step){
+
+let r=evaluate(grid);
+
+if(r.win){
+
+balance+=r.win;
+
+total+=r.win;
+
+$("lastWin").textContent=r.win.toFixed(2);
+
+$("totalWin").textContent=total.toFixed(2);
+
+draw(grid,r.wins);
+
+$("msg").textContent="BIG WIN! "+r.win.toFixed(2);
+
+}
+
+else{
+
+$("msg").textContent="NO WIN";
+
+draw(grid);
+
+}
+
+if(r.sc>=3){
+
+free+=5;
+
+multi=Math.min(10,multi+1);
+
+$("msg").textContent=
+"SCATTER! +5 FREE SPINS • ×"+multi;
+
+}
+
+update();
+
+busy=false;
+
+$("spin").disabled=false;
+
+}
+
+update();
+
 </script>
-</body></html>
+
+</body>
+</html>
