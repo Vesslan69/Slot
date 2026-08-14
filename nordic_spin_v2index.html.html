@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Nordic Spin v2</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#283753,#0b1019 70%);color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+.app{width:min(500px,100%);margin:auto;padding:14px 12px 30px}h1{text-align:center;margin:4px 0;font-size:31px;letter-spacing:1px}.sub{text-align:center;color:#aeb9ca;font-size:12px;margin-bottom:12px}
+.card{background:#1a2435;border:1px solid #3a4961;border-radius:22px;padding:12px;box-shadow:0 15px 45px #0008}
+.top{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}.stat{background:#0e1623;border-radius:12px;padding:8px;text-align:center}.lab{font-size:9px;color:#8997aa;display:block}.val{font-weight:900;font-size:17px}
+.machine{margin-top:10px;background:#080d15;border-radius:16px;padding:8px;border:2px solid #4a5870}.reels{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(3,66px);gap:5px}
+.cell{background:linear-gradient(#f7f3e9,#ded8c8);color:#142033;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:28px;position:relative}
+.cell.win{box-shadow:inset 0 0 0 3px #f4c542,0 0 10px #f4c542}.wild{background:linear-gradient(#dff7ff,#9ddbf0)}.scatter{background:linear-gradient(#f8e4ff,#d4a3e8)}
+.controls{display:grid;grid-template-columns:auto 1fr auto;gap:7px;margin-top:10px}select,button{border:0;border-radius:12px;padding:12px;font:inherit}select{background:#0e1623;color:#fff}.spin{background:#f4c542;color:#16120a;font-size:20px;font-weight:900}.reset{background:#3c4a60;color:#fff}.bonus{display:none;text-align:center;background:#36294b;border-radius:14px;margin-top:10px;padding:12px}.bonus.show{display:block}.bonus button{background:#f4c542;font-weight:900;margin-top:7px}
+.msg{text-align:center;min-height:26px;font-weight:800;margin:10px 0 2px}.pay{margin-top:10px;background:#0e1623;border-radius:13px;padding:9px;font-size:12px}.pay div{display:flex;justify-content:space-between;padding:3px}
+.note{text-align:center;color:#778499;font-size:10px;margin-top:10px;line-height:1.4}
+</style>
+</head>
+<body>
+<div class="app">
+<h1>NORDIC SPIN</h1><div class="sub">v2 • 5×3 • låtsaspengar</div>
+<div class="card">
+<div class="top">
+<div class="stat"><span class="lab">SALDO</span><span id="balance" class="val">1 000 kr</span></div>
+<div class="stat"><span class="lab">INSATS</span><span id="betText" class="val">10 kr</span></div>
+<div class="stat"><span class="lab">FREE SPINS</span><span id="fs" class="val">0</span></div>
+</div>
+<div class="machine"><div id="grid" class="reels"></div></div>
+<div class="controls">
+<select id="bet"><option value="5">5 kr</option><option value="10" selected>10 kr</option><option value="20">20 kr</option><option value="50">50 kr</option></select>
+<button id="reset" class="reset">↻</button><button id="spin" class="spin">SPIN</button>
+</div>
+<div id="bonus" class="bonus"><b>🎁 FREE SPINS!</b><br><span id="bonusText"></span><br><button id="continue">Fortsätt</button></div>
+<div id="msg" class="msg">Tryck SPIN</div>
+<div class="pay">
+<div><span>🍒 🍒 🍒</span><b>2×</b></div><div><span>🍋 🍋 🍋</span><b>4×</b></div>
+<div><span>⭐ ⭐ ⭐</span><b>8×</b></div><div><span>💎 💎 💎</span><b>15×</b></div>
+<div><span>7️⃣ 7️⃣ 7️⃣</span><b>50×</b></div><div><span>🟣 SCATTER ×3</span><b>+5 FREE</b></div>
+</div></div>
+<div class="note">Prototyp för spelmekanik. Ingen riktig insats, betalning eller uttag.</div>
+</div>
+<script>
+const S=[
+{s:"🍒",w:34,m:2},{s:"🍋",w:28,m:4},{s:"⭐",w:18,m:8},
+{s:"💎",w:10,m:15},{s:"7️⃣",w:5,m:50},{s:"WILD",w:3,m:0},{s:"SCATTER",w:2,m:0}
+];
+const paylines=[
+[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],
+[0,1,2,1,0],[2,1,0,1,2],[0,0,1,2,2],[2,2,1,0,0],
+[1,0,0,0,1],[1,2,2,2,1],[0,1,1,1,2]
+];
+let balance=1000,free=0,busy=false,locked=false;
+const $=x=>document.getElementById(x);
+function pick(){let r=Math.random()*100;for(const x of S){r-=x.w;if(r<=0)return x}return S[0]}
+function money(n){return Math.round(n).toLocaleString("sv-SE")+" kr"}
+function update(){$("balance").textContent=money(balance);$("betText").textContent=money(+$("bet").value);$("fs").textContent=free}
+function draw(grid,wins=[]){
+ let out="";for(let r=0;r<3;r++)for(let c=0;c<5;c++){let x=grid[r][c],cl="cell";if(x.s==="WILD")cl+=" wild";if(x.s==="SCATTER")cl+=" scatter";if(wins.some(p=>p[0]===r&&p[1]===c))cl+=" win";out+=`<div class="${cl}">${x.s==="WILD"?"🃏":x.s==="SCATTER"?"🟣":x.s}</div>`}$("grid").innerHTML=out
+}
+function randomGrid(){return Array.from({length:3},()=>Array.from({length:5},pick))}
+let grid=randomGrid();draw(grid);update();
+$("bet").onchange=update;
+$("reset").onclick=()=>{balance=1000;free=0;busy=false;locked=false;$("bonus").classList.remove("show");$("spin").disabled=false;$("msg").textContent="Tryck SPIN";grid=randomGrid();draw(grid);update()}
+function evaluate(g,bet){
+ let win=0,positions=[],sc=0;
+ g.flat().forEach(x=>{if(x.s==="SCATTER")sc++});
+ paylines.forEach(line=>{
+  let first=null,count=0;
+  for(let c=0;c<5;c++){let x=g[line[c]][c];if(x.s==="SCATTER")break;
+   if(x.s==="WILD"|| (first && x.s===first.s)){count++;if(!first)first=x}
+   else if(!first){first=x;count=1}else break}
+  if(count>=3&&first&&first.s!=="WILD"){win+=bet*first.m*(count===4?1.5:count===5?3:1);for(let c=0;c<count;c++)positions.push([line[c],c])}
+ });
+ return {win:Math.floor(win),sc,positions}
+}
+function spin(){
+ if(busy||locked)return;
+ const bet=+$("bet").value;
+ if(free===0&&balance<bet){$("msg").textContent="För lite saldo.";return}
+ if(free===0)balance-=bet;else free--;
+ update();busy=true;$("spin").disabled=true;$("msg").textContent=free>0?"Free Spin…":"Snurrar…";
+ let n=0,t=setInterval(()=>{grid=randomGrid();draw(grid);if(++n>=14){clearInterval(t);finish(bet)}},65)
+}
+function finish(bet){
+ const result=evaluate(grid,bet);
+ let win=result.win;
+ if(win>0){balance+=win;draw(grid,result.positions);$("msg").textContent="🎉 Vinst "+money(win)+"!"}else $("msg").textContent="Ingen vinst.";
+ if(result.sc>=3){free+=5;locked=true;$("bonusText").textContent="Du fick 5 Free Spins!";$("bonus").classList.add("show")}
+ busy=false;$("spin").disabled=false;update();
+}
+$("spin").onclick=spin;
+$("continue").onclick=()=>{$("bonus").classList.remove("show");locked=false;$("msg").textContent="Free Spins redo!";if(free>0)setTimeout(spin,250)}
+</script>
+</body></html>
