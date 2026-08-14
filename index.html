@@ -5,784 +5,183 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Nordic Spin</title>
 <style>
-:root{--gold:#ffc52f;--ice:#5fdcff;--red:#ff3d2f;--bg:#03070c}
+:root{--gold:#ffc52f;--ice:#5fdcff;--red:#ff3d2f}
 *{box-sizing:border-box}
-html,body{
-margin:0;
-background:#03070c;
-color:#fff;
-font-family:Arial,Helvetica,sans-serif
-}
-body{
-display:flex;
-justify-content:center;
-min-height:100vh
-}
-.app{
-width:min(1200px,100%);
-min-height:100vh;
-background:radial-gradient(circle at 50% 18%,#1c2c3d 0,#07111b 34%,#020509 78%);
-padding:8px
-}
-.header{
-height:74px;
-display:flex;
-align-items:center;
-justify-content:center;
-position:relative
-}
-.logo{
-font-weight:1000;
-font-size:clamp(32px,7vw,66px);
-letter-spacing:2px;
-line-height:.8;
-color:#d8e0e7;
-text-shadow:3px 4px 0 #202a32,0 0 18px #6edfff55
-}
-.logo span{
-display:block;
-color:#e32c1f;
-font-style:italic;
-font-size:.55em;
-letter-spacing:1px;
-margin-top:8px;
-transform:rotate(-4deg)
-}
-.icon{
-position:absolute;
-top:10px;
-width:44px;
-height:44px;
-border:1px solid #596a7c;
-background:#080d14;
-border-radius:50%;
-display:grid;
-place-items:center;
-font-size:22px
-}
-.left{left:8px}
-.right{right:8px}
-
-.game{
-position:relative;
-display:grid;
-grid-template-columns:92px 1fr 92px;
-gap:8px;
-align-items:stretch;
-max-width:1160px;
-margin:auto
-}
-.side{
-display:flex;
-flex-direction:column;
-gap:8px
-}
-.box{
-background:linear-gradient(180deg,#101a25,#070c12);
-border:2px solid #4d5d6b;
-border-radius:9px;
-padding:12px 6px;
-text-align:center;
-box-shadow:inset 0 0 0 1px #111
-}
-.box small{
-display:block;
-color:#e0bd55;
-font-size:12px;
-font-weight:800
-}
-.box b{
-display:block;
-font-size:23px;
-margin-top:7px
-}
+html,body{margin:0;background:#03070c;color:#fff;font-family:Arial,Helvetica,sans-serif}
+body{display:flex;justify-content:center;min-height:100vh}
+.app{width:min(1200px,100%);min-height:100vh;background:radial-gradient(circle at 50% 15%,#263c50,#07111b 35%,#020509 78%);padding:8px}
+.header{height:78px;display:flex;align-items:center;justify-content:center;position:relative}
+.logo{font-weight:1000;font-size:clamp(34px,7vw,68px);letter-spacing:3px;line-height:.75;color:#dce4e9;text-shadow:3px 4px 0 #202a32,0 0 18px #6edfff55}
+.logo span{display:block;color:#e32c1f;font-style:italic;font-size:.55em;letter-spacing:1px;margin-top:10px;transform:rotate(-4deg)}
+.icon{position:absolute;top:10px;width:44px;height:44px;border:1px solid #596a7c;background:#080d14;color:#fff;border-radius:50%;font-size:20px}
+.left{left:8px}.right{right:8px}
+.game{display:grid;grid-template-columns:92px 1fr 92px;gap:8px;max-width:1160px;margin:auto}
+.side{display:flex;flex-direction:column;gap:8px}
+.box{background:linear-gradient(180deg,#101a25,#070c12);border:2px solid #4d5d6b;border-radius:9px;padding:12px 6px;text-align:center;box-shadow:inset 0 0 0 1px #111}
+.box small{display:block;color:#e0bd55;font-size:11px;font-weight:800}.box b{display:block;font-size:22px;margin-top:7px}
 .ice{color:var(--ice)!important}
-.red{color:#ff5749!important}
-
-.reelFrame{
-background:linear-gradient(145deg,#596b7b,#141c25 14%,#080b10 50%,#566777);
-border:3px solid #687b8c;
-border-radius:13px;
-padding:8px;
-box-shadow:0 15px 35px #000c
-}
-.reels{
-display:grid;
-grid-template-columns:repeat(5,1fr);
-grid-template-rows:repeat(3,1fr);
-gap:4px;
-background:#020407;
-border:2px solid #18222c;
-padding:5px;
-border-radius:7px
-}
-.cell{
-min-height:110px;
-background:linear-gradient(150deg,#111a22,#26323b 48%,#0c1117);
-border:1px solid #53636d;
-border-radius:4px;
-display:flex;
-align-items:center;
-justify-content:center;
-position:relative;
-overflow:hidden;
-font-size:clamp(30px,5vw,58px);
-font-weight:900;
-text-shadow:0 3px 4px #000
-}
-.cell:after{
-content:"";
-position:absolute;
-inset:0;
-background:linear-gradient(120deg,#fff1 0,transparent 25%,transparent 75%,#fff1);
-pointer-events:none
-}
-.letter{
-font-family:Georgia,serif;
-font-size:clamp(38px,6vw,66px);
-color:#cbd5dc;
-text-shadow:2px 3px 0 #000
-}
-.redletter{color:#b84635}
-.greenletter{color:#75a14d}
-.blueletter{color:#64a7b5}
-
-.wild{
-background:radial-gradient(circle,#f5b51d,#6b3d05 72%);
-border-color:#d79a21;
-font-size:clamp(25px,4vw,45px);
-color:#fff1bd
-}
-.scatter{
-background:radial-gradient(circle,#9a54cf,#241035 70%);
-border-color:#c36bff
-}
-.win{
-outline:4px solid var(--gold);
-box-shadow:0 0 24px var(--gold);
-animation:pulse .25s infinite alternate
-}
-@keyframes pulse{
-to{
-filter:brightness(1.5);
-transform:scale(1.025)
-}
-}
-
-.controls{
-display:grid;
-grid-template-columns:1.2fr 1.2fr 1.2fr 1.6fr 1fr;
-gap:7px;
-margin-top:8px
-}
-.ctrl{
-background:linear-gradient(#141d27,#070b10);
-border:2px solid #445463;
-border-radius:9px;
-padding:9px;
-text-align:center
-}
-.ctrl small{
-display:block;
-color:#bda652;
-font-size:10px
-}
-.ctrl b{
-font-size:16px
-}
-.spin{
-border-radius:50%;
-aspect-ratio:1;
-background:radial-gradient(circle,#f4d16a 0,#8e5a0b 45%,#1b1110 60%,#f45a22 63%,#141414 70%);
-border:5px solid #111;
-color:white;
-font-size:26px;
-font-weight:1000;
-box-shadow:0 0 25px #ff6a25aa
-}
-.spin:active{
-transform:scale(.96)
-}
-.betrow{
-display:flex;
-align-items:center;
-justify-content:center;
-gap:8px
-}
-.betrow button{
-width:30px;
-height:30px;
-border-radius:50%;
-border:1px solid #667;
-background:#101822;
-color:#fff;
-font-weight:900
-}
-button{
-cursor:pointer
-}
-
-.showcase{
-display:grid;
-grid-template-columns:1fr 1fr 1fr;
-gap:8px;
-margin-top:10px
-}
-.feature{
-min-height:150px;
-border:2px solid #263743;
-border-radius:8px;
-background:linear-gradient(135deg,#0a0f14,#171d22);
-padding:10px;
-position:relative;
-overflow:hidden;
-text-align:center
-}
-.feature h3{
-margin:0;
-font-size:22px;
-font-style:italic
-}
-.big{
-color:#f33;
-text-shadow:0 0 10px #f30
-}
-.blue{color:#35bfe8}
-.epic{color:#ff4c32}
-.feature .demo{
-font-size:35px;
-margin-top:16px
-}
-.feature strong{
-font-size:28px;
-color:#ffcf43;
-display:block;
-margin-top:7px
-}
-
-.rules{
-display:grid;
-grid-template-columns:repeat(5,1fr);
-margin-top:8px;
-border:1px solid #273641;
-background:#080d12
-}
-.rule{
-padding:9px;
-border-right:1px solid #273641;
-text-align:center;
-font-size:10px;
-color:#9aabb8
-}
-.rule b{
-display:block;
-color:#fff;
-font-size:12px;
-margin-bottom:4px
-}
-.footer{
-text-align:center;
-border-top:1px solid #26333e;
-margin-top:8px;
-padding:8px;
-color:#a9b4bd;
-font-size:12px
-}
-.footer span{
-color:#ff4d3e
-}
-.msg{
-text-align:center;
-height:25px;
-padding:5px;
-font-weight:900;
-color:#ffd34b
-}
-
+.reelFrame{background:linear-gradient(145deg,#596b7b,#141c25 14%,#080b10 50%,#566777);border:3px solid #687b8c;border-radius:13px;padding:8px;box-shadow:0 15px 35px #000c}
+.reels{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;background:#020407;border:2px solid #18222c;padding:5px;border-radius:7px}
+.cell{height:clamp(68px,10vw,112px);background:linear-gradient(150deg,#111a22,#26323b 48%,#0c1117);border:1px solid #53636d;border-radius:4px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;font-size:clamp(27px,5vw,58px);font-weight:900;text-shadow:0 3px 4px #000}
+.cell:after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,#fff1,transparent 25%,transparent 75%,#fff1);pointer-events:none}
+.wild{background:radial-gradient(circle,#f5b51d,#6b3d05 72%);border-color:#d79a21}
+.scatter{background:radial-gradient(circle,#a05bd0,#241035 70%);border-color:#c36bff}
+.win{outline:4px solid var(--gold);box-shadow:0 0 24px var(--gold);animation:pulse .25s infinite alternate}
+@keyframes pulse{to{filter:brightness(1.5);transform:scale(1.025)}}
+.spinAnim{animation:shake .08s infinite alternate}
+@keyframes shake{to{transform:translateY(3px) rotate(.6deg)}}
+.controls{display:grid;grid-template-columns:1.2fr 1.3fr 1.2fr 1.5fr 1fr;gap:7px;margin-top:8px}
+.ctrl{background:linear-gradient(#141d27,#070b10);border:2px solid #445463;border-radius:9px;padding:9px;text-align:center;min-height:58px}
+.ctrl small{display:block;color:#bda652;font-size:10px}.ctrl b{font-size:16px}
+.betrow{display:flex;align-items:center;justify-content:center;gap:8px}
+.betrow button{width:30px;height:30px;border-radius:50%;border:1px solid #667;background:#101822;color:#fff;font-weight:900}
+.spin{border-radius:50%;width:58px;height:58px;margin:-5px auto -5px;background:radial-gradient(circle,#f4d16a 0,#8e5a0b 45%,#1b1110 60%,#f45a22 63%,#141414 70%);border:5px solid #111;color:#fff;font-size:25px;font-weight:1000;box-shadow:0 0 25px #ff6a25aa}
+.spin:disabled{opacity:.5}.msg{text-align:center;height:28px;padding:6px;color:#ffd34b;font-weight:900}
+.showcase{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px}
+.feature{min-height:135px;border:2px solid #263743;border-radius:8px;background:linear-gradient(135deg,#0a0f14,#171d22);padding:10px;text-align:center}
+.feature h3{margin:0;font-size:22px;font-style:italic}.big{color:#f33;text-shadow:0 0 10px #f30}.blue{color:#35bfe8}.epic{color:#ff4c32}
+.demo{font-size:32px;margin-top:12px}.feature strong{font-size:26px;color:#ffcf43;display:block;margin-top:6px}
+.rules{display:grid;grid-template-columns:repeat(5,1fr);margin-top:8px;border:1px solid #273641;background:#080d12}
+.rule{padding:9px;border-right:1px solid #273641;text-align:center;font-size:10px;color:#9aabb8}.rule b{display:block;color:#fff;font-size:12px;margin-bottom:4px}
+.footer{text-align:center;border-top:1px solid #26333e;margin-top:8px;padding:8px;color:#a9b4bd;font-size:12px}.footer span{color:#ff4d3e}
 @media(max-width:700px){
-.app{padding:4px}
-.header{height:65px}
-.game{
-grid-template-columns:48px 1fr 48px;
-gap:4px
-}
-.box{padding:8px 2px}
-.box small{font-size:8px}
-.box b{font-size:13px}
-.cell{
-min-height:70px;
-font-size:25px
-}
-.letter{font-size:31px}
-.controls{
-grid-template-columns:1fr 1fr 1.2fr
-}
-.ctrl:nth-child(4){display:none}
-.ctrl:nth-child(5){display:none}
-.spin{font-size:18px}
-.showcase{grid-template-columns:1fr}
-.feature{min-height:105px}
-.rules{grid-template-columns:repeat(2,1fr)}
-.rule:nth-child(n+3){display:none}
+.app{padding:4px}.header{height:65px}.game{grid-template-columns:47px 1fr 47px;gap:4px}.box{padding:8px 2px}.box small{font-size:8px}.box b{font-size:12px}.cell{height:68px;font-size:25px}
+.controls{grid-template-columns:1fr 1.2fr 1.3fr}.ctrl:nth-child(4),.ctrl:nth-child(5){display:none}.showcase{grid-template-columns:1fr}.feature{min-height:100px}.rules{grid-template-columns:repeat(2,1fr)}.rule:nth-child(n+3){display:none}
 }
 </style>
 </head>
-
 <body>
 <div class="app">
-
 <header class="header">
-<button class="icon left">☰</button>
-
-<div class="logo">
-NORDIC
-<span>SPIN</span>
-</div>
-
+<button class="icon left" id="menu">☰</button>
+<div class="logo">NORDIC<span>SPIN</span></div>
 <button class="icon right">🔊</button>
 </header>
 
 <section class="game">
-
 <aside class="side">
-
-<div class="box">
-<small>WAYS</small>
-<b>1024</b>
-</div>
-
-<div class="box">
-<small>WIN</small>
-<b id="lastWin">0.00</b>
-</div>
-
-<div class="box">
-<small class="ice">MULTIPLIER</small>
-<b id="multi" class="ice">×1</b>
-</div>
-
+<div class="box"><small>WAYS</small><b>1024</b></div>
+<div class="box"><small>WIN</small><b id="lastWin">0.00</b></div>
+<div class="box"><small class="ice">MULTIPLIER</small><b id="multi" class="ice">×1</b></div>
 </aside>
 
 <main>
-
-<div class="reelFrame">
-<div id="reels" class="reels"></div>
-</div>
-
+<div class="reelFrame"><div id="reels" class="reels"></div></div>
 <div class="controls">
-
-<div class="ctrl">
-<small>BALANCE</small>
-<b id="balance">10 250.00</b>
+<div class="ctrl"><small>BALANCE</small><b id="balance">10 250.00</b></div>
+<div class="ctrl"><small>BET</small><div class="betrow"><button id="minus">−</button><b id="bet">20.00</b><button id="plus">+</button></div></div>
+<div class="ctrl"><button id="spin" class="spin">↻</button></div>
+<div class="ctrl"><small>TOTAL WIN</small><b id="totalWin">0.00</b></div>
+<div class="ctrl"><small>FREE SPINS</small><b id="free">0</b></div>
 </div>
-
-<div class="ctrl">
-<small>BET</small>
-
-<div class="betrow">
-<button id="minus">−</button>
-<b id="bet">20.00</b>
-<button id="plus">+</button>
-</div>
-
-</div>
-
-<div class="ctrl">
-<button id="spin" class="spin">↻</button>
-</div>
-
-<div class="ctrl">
-<small>TOTAL WIN</small>
-<b id="totalWin">325.00</b>
-</div>
-
-<div class="ctrl">
-<small>FREE SPINS</small>
-<b id="free">7 / 10</b>
-</div>
-
-</div>
-
-<div id="msg" class="msg">
-READY TO SPIN
-</div>
-
+<div id="msg" class="msg">READY TO SPIN</div>
 </main>
 
 <aside class="side">
-
-<div class="box">
-<small class="ice">FREE</small>
-<small class="ice">SPINS</small>
-<b id="freeSide">7/10</b>
-</div>
-
-<div class="box">
-<small>MAX WIN</small>
-<b>5000×</b>
-</div>
-
+<div class="box"><small class="ice">FREE</small><small class="ice">SPINS</small><b id="freeSide">0</b></div>
+<div class="box"><small>MAX WIN</small><b>5000×</b></div>
 </aside>
-
 </section>
 
 <section class="showcase">
-
-<div class="feature">
-<h3 class="big">BIG WIN</h3>
-<div class="demo">🃏 🃏 🃏</div>
-<strong>3 240.00</strong>
-<small>×8 MULTIPLIER</small>
-</div>
-
-<div class="feature">
-<h3 class="blue">FREE SPINS</h3>
-<div class="demo">🃏 🃏 🃏</div>
-<strong>7 FS</strong>
-<small>EXPANDING WILDS • ×5</small>
-</div>
-
-<div class="feature">
-<h3 class="epic">EPIC WIN</h3>
-<div class="demo">⚔️ 🔥 ⚔️</div>
-<strong>15 870.00</strong>
-<small>EPIC MOMENT</small>
-</div>
-
+<div class="feature"><h3 class="big">BIG WIN</h3><div class="demo">🃏 🃏 🃏</div><strong>3 240.00</strong><small>×8 MULTIPLIER</small></div>
+<div class="feature"><h3 class="blue">FREE SPINS</h3><div class="demo">🃏 🃏 🃏</div><strong>7 FS</strong><small>EXPANDING WILDS • ×5</small></div>
+<div class="feature"><h3 class="epic">EPIC WIN</h3><div class="demo">⚔️ 🔥 ⚔️</div><strong>15 870.00</strong><small>EPIC MOMENT</small></div>
 </section>
 
 <section class="rules">
-
-<div class="rule">
-<b>🃏 WILD</b>
-Substitutes for all symbols except Scatter.
-</div>
-
-<div class="rule">
-<b>🟣 SCATTER</b>
-3+ triggers Free Spins.
-</div>
-
-<div class="rule">
-<b>🪓 TUMBLE</b>
-Winning symbols disappear and new symbols fall.
-</div>
-
-<div class="rule">
-<b>🃏 NUDGE WILDS</b>
-Wilds can move during Free Spins.
-</div>
-
-<div class="rule">
-<b>MAX WIN</b>
-5,000× bet.
-</div>
-
+<div class="rule"><b>🃏 WILD</b>Substitutes for all symbols except Scatter.</div>
+<div class="rule"><b>🟣 SCATTER</b>3+ triggers Free Spins.</div>
+<div class="rule"><b>🪓 TUMBLE</b>Winning symbols disappear and new symbols fall.</div>
+<div class="rule"><b>🃏 NUDGE WILDS</b>Wilds can move during Free Spins.</div>
+<div class="rule"><b>MAX WIN</b>5,000× bet.</div>
 </section>
-
-<div class="footer">
-RTP: 96.00% &nbsp; | &nbsp;
-VOLATILITY: <span>HIGH</span> &nbsp; | &nbsp;
-MAX WIN: <span>5,000×</span>
-</div>
-
+<div class="footer">RTP: 96.00% &nbsp; | &nbsp; VOLATILITY: <span>HIGH</span> &nbsp; | &nbsp; MAX WIN: <span>5,000×</span></div>
 </div>
 
 <script>
-
 const symbols=[
-{s:"🐦",m:2,w:30},
-{s:"🪓",m:4,w:25},
-{s:"⚔️",m:8,w:18},
-{s:"👑",m:15,w:11},
-{s:"🛡️",m:30,w:7},
-{s:"WILD",m:0,w:5},
-{s:"SCATTER",m:0,w:4}
+{s:"🐦",m:2,w:30},{s:"🪓",m:4,w:25},{s:"⚔️",m:8,w:18},
+{s:"👑",m:15,w:11},{s:"🛡️",m:30,w:7},{s:"WILD",m:0,w:5},{s:"SCATTER",m:0,w:4}
 ];
-
 const lines=[
-[1,1,1,1,1],
-[0,0,0,0,0],
-[2,2,2,2,2],
-[0,1,2,1,0],
-[2,1,0,1,2],
-[0,0,1,2,2],
-[2,2,1,0,0],
-[1,0,0,0,1],
-[1,2,2,2,1],
-[0,1,1,1,2]
+[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],
+[0,0,1,2,2],[2,2,1,0,0],[1,0,0,0,1],[1,2,2,2,1],[0,1,1,1,2]
 ];
-
-let balance=10250;
-let bet=20;
-let total=325;
-let multi=1;
-let free=7;
-let busy=false;
-let grid=[];
-
-const $=x=>document.getElementById(x);
+let balance=10250,bet=20,total=0,multi=1,free=0,busy=false,grid=[];
+const $=id=>document.getElementById(id);
 
 function pick(){
-
-let r=Math.random()*100;
-
-for(const x of symbols){
-
-r-=x.w;
-
-if(r<=0)return x;
-
+ let r=Math.random()*100;
+ for(const x of symbols){r-=x.w;if(r<=0)return x}
+ return symbols[0];
 }
-
-return symbols[0];
-
+function makeGrid(){return Array.from({length:3},()=>Array.from({length:5},pick))}
+function draw(g,wins=[],spinning=false){
+ let h="";
+ for(let r=0;r<3;r++)for(let c=0;c<5;c++){
+  const x=g[r][c];
+  let cl="cell";
+  if(x.s==="WILD")cl+=" wild";
+  if(x.s==="SCATTER")cl+=" scatter";
+  if(wins.some(p=>p[0]===r&&p[1]===c))cl+=" win";
+  if(spinning)cl+=" spinAnim";
+  const icon=x.s==="WILD"?"🃏":x.s==="SCATTER"?"🟣":x.s;
+  h+=`<div class="${cl}">${icon}</div>`;
+ }
+ $("reels").innerHTML=h;
 }
-
-function make(){
-
-return Array.from(
-{length:3},
-()=>Array.from(
-{length:5},
-pick
-)
-);
-
-}
-
-function draw(g,wins=[],spin=false){
-
-let h="";
-
-for(let r=0;r<3;r++){
-
-for(let c=0;c<5;c++){
-
-let x=g[r][c];
-let cl="cell";
-
-if(x.s==="WILD")
-cl+=" wild";
-
-else if(x.s==="SCATTER")
-cl+=" scatter";
-
-else
-cl+=" letter";
-
-if(wins.some(p=>p[0]===r&&p[1]===c))
-cl+=" win";
-
-if(spin)
-cl+=" shake";
-
-h+=`<div class="${cl}">
-${x.s==="WILD"?"🃏":x.s==="SCATTER"?"🟣":x.s}
-</div>`;
-
-}
-
-}
-
-$("reels").innerHTML=h;
-
-}
-
-function evaluate(g){
-
-let win=0;
-let wins=[];
-let sc=0;
-
-g.flat().forEach(x=>{
-if(x.s==="SCATTER")sc++;
-});
-
-for(const line of lines){
-
-let first=null;
-let n=0;
-
-for(let c=0;c<5;c++){
-
-let x=g[line[c]][c];
-
-if(x.s==="SCATTER")
-break;
-
-if(!first && x.s!=="WILD"){
-
-first=x;
-n=1;
-
-}
-
-else if(
-x.s==="WILD" ||
-(first && x.s===first.s)
-){
-
-n++;
-
-}
-
-else break;
-
-}
-
-if(first && n>=3){
-
-win+=
-bet*
-first.m*
-(n===3?1:n===4?1.5:3)*
-multi;
-
-for(let c=0;c<n;c++)
-wins.push([line[c],c]);
-
-}
-
-}
-
-return {
-win:Math.floor(win),
-wins,
-sc
-};
-
-}
-
 function update(){
-
-$("balance").textContent=balance.toFixed(2);
-
-$("bet").textContent=bet.toFixed(2);
-
-$("totalWin").textContent=total.toFixed(2);
-
-$("lastWin").textContent="0.00";
-
-$("multi").textContent="×"+multi;
-
-$("free").textContent=free+" / 10";
-
-$("freeSide").textContent=free+"/10";
-
+ $("balance").textContent=balance.toFixed(2);
+ $("bet").textContent=bet.toFixed(2);
+ $("totalWin").textContent=total.toFixed(2);
+ $("multi").textContent="×"+multi;
+ $("free").textContent=free;
+ $("freeSide").textContent=free;
 }
-
-grid=make();
-
-draw(grid);
-
-$("minus").onclick=()=>{
-
-bet=Math.max(10,bet-10);
-
-update();
-
-};
-
-$("plus").onclick=()=>{
-
-bet=Math.min(100,bet+10);
-
-update();
-
-};
-
-$("spin").onclick=()=>{
-
-if(busy)
-return;
-
-if(free<=0 && balance<bet)
-return;
-
-if(free>0)
-free--;
-else
-balance-=bet;
-
-update();
-
-busy=true;
-
-$("spin").disabled=true;
-
-$("msg").textContent="SPINNING…";
-
-let i=0;
-
-let t=setInterval(()=>{
-
-grid=make();
-
-draw(grid,[],true);
-
-if(++i>=15){
-
-clearInterval(t);
-
-resolve(0);
-
+function evaluate(g){
+ let win=0,wins=[],sc=0;
+ g.flat().forEach(x=>{if(x.s==="SCATTER")sc++});
+ for(const line of lines){
+  let first=null,n=0;
+  for(let c=0;c<5;c++){
+   const x=g[line[c]][c];
+   if(x.s==="SCATTER")break;
+   if(!first&&x.s!=="WILD"){first=x;n=1}
+   else if(x.s==="WILD"||(first&&x.s===first.s))n++;
+   else break;
+  }
+  if(first&&n>=3){
+   win+=bet*first.m*(n===3?1:n===4?1.5:3)*multi;
+   for(let c=0;c<n;c++)wins.push([line[c],c]);
+  }
+ }
+ return {win:Math.floor(win),wins,sc};
 }
-
-},65);
-
-};
-
-function resolve(step){
-
-let r=evaluate(grid);
-
-if(r.win){
-
-balance+=r.win;
-
-total+=r.win;
-
-$("lastWin").textContent=r.win.toFixed(2);
-
-$("totalWin").textContent=total.toFixed(2);
-
-draw(grid,r.wins);
-
-$("msg").textContent="BIG WIN! "+r.win.toFixed(2);
-
+function spin(){
+ if(busy)return;
+ if(free===0&&balance<bet){$("msg").textContent="NOT ENOUGH BALANCE";return}
+ if(free>0)free--;else balance-=bet;
+ update();busy=true;$("spin").disabled=true;$("msg").textContent=free?"FREE SPIN…":"SPINNING…";
+ let n=0;
+ const timer=setInterval(()=>{
+  draw(makeGrid(),[],true);
+  if(++n>=16){clearInterval(timer);grid=makeGrid();finishSpin()}
+ },70);
 }
-
-else{
-
-$("msg").textContent="NO WIN";
-
-draw(grid);
-
+function finishSpin(){
+ const r=evaluate(grid);
+ draw(grid,r.wins);
+ if(r.win>0){balance+=r.win;total+=r.win;$("lastWin").textContent=r.win.toFixed(2);$("msg").textContent="BIG WIN! +"+r.win.toFixed(2)}
+ else{$("lastWin").textContent="0.00";$("msg").textContent="NO WIN"}
+ if(r.sc>=3){free+=5;multi=Math.min(10,multi+1);$("msg").textContent="SCATTER! +5 FREE SPINS • ×"+multi}
+ update();busy=false;$("spin").disabled=false;
 }
-
-if(r.sc>=3){
-
-free+=5;
-
-multi=Math.min(10,multi+1);
-
-$("msg").textContent=
-"SCATTER! +5 FREE SPINS • ×"+multi;
-
-}
-
-update();
-
-busy=false;
-
-$("spin").disabled=false;
-
-}
-
-update();
-
+$("spin").onclick=spin;
+$("minus").onclick=()=>{bet=Math.max(10,bet-10);update()};
+$("plus").onclick=()=>{bet=Math.min(100,bet+10);update()};
+$("menu").onclick=()=>{$("msg").textContent="NORDIC SPIN • DEMO MODE"};
+grid=makeGrid();draw(grid);update();
 </script>
-
 </body>
 </html>
