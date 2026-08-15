@@ -84,6 +84,71 @@ column-gap:5px;
 .spin{width:104px;height:104px;font-size:58px}
 .spin::after{inset:7px}
 }
+
+/* === WIN EFFECTS === */
+.win-flash{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:0;
+  z-index:50;
+  background:radial-gradient(circle at 50% 55%,rgba(255,215,80,.32),rgba(255,180,0,.10) 32%,transparent 65%);
+}
+.win-flash.active{animation:screenWin .65s ease-out}
+@keyframes screenWin{
+  0%{opacity:0}
+  18%{opacity:1}
+  100%{opacity:0}
+}
+.win-particles{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:51;
+  overflow:hidden;
+}
+.win-particle{
+  position:absolute;
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#ffd866;
+  box-shadow:0 0 10px #f6b82e;
+  animation:particleFly var(--dur) ease-out forwards;
+}
+@keyframes particleFly{
+  0%{transform:translate(0,0) scale(1);opacity:1}
+  100%{transform:translate(var(--dx),var(--dy)) scale(.15);opacity:0}
+}
+.big-win{
+  position:absolute;
+  left:50%;
+  top:67%;
+  transform:translate(-50%,-50%) scale(.65);
+  z-index:60;
+  pointer-events:none;
+  white-space:nowrap;
+  color:#ffd866;
+  font-weight:900;
+  font-size:clamp(28px,7vw,48px);
+  text-shadow:0 0 8px #000,0 0 18px #f6b82e,0 3px 0 #6b3d00;
+  opacity:0;
+}
+.big-win.show{animation:bigWin .95s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes bigWin{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.55)}
+  18%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}
+  75%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.02)}
+}
+.win-glow{
+  animation:winGlow .8s ease-in-out 2;
+}
+@keyframes winGlow{
+  0%,100%{filter:none}
+  50%{filter:drop-shadow(0 0 10px #ffd866) drop-shadow(0 0 20px #f6b82e)}
+}
+
 </style>
 </head>
 <body>
@@ -149,6 +214,42 @@ balance+=win;document.getElementById('balance').textContent=money(balance);docum
 if(win>0){showMsg('WIN! +'+money(win));beep(720,.12);setTimeout(()=>beep(960,.15),100)}else{showMsg('NO WIN');beep(180,.08)}
 spinning=false;if(auto)autoTimer=setTimeout(spin,turbo?250:650)},base+4*150+150)}
 buildReels();
+
+/* === WIN FX === */
+function triggerWinEffects(amount){
+  const flash = document.getElementById('winFlash');
+  const particles = document.getElementById('winParticles');
+  const big = document.getElementById('bigWin');
+  if(!flash || !particles || !big) return;
+
+  flash.classList.remove('active');
+  void flash.offsetWidth;
+  flash.classList.add('active');
+
+  particles.innerHTML = '';
+  const count = amount >= 100 ? 34 : amount >= 50 ? 24 : 14;
+  for(let i=0;i<count;i++){
+    const p=document.createElement('span');
+    p.className='win-particle';
+    p.style.left=(42+Math.random()*16)+'%';
+    p.style.top=(43+Math.random()*20)+'%';
+    p.style.setProperty('--dx',((Math.random()-.5)*90)+'vw');
+    p.style.setProperty('--dy',((Math.random()-.72)*55)+'vh');
+    p.style.setProperty('--dur',(0.55+Math.random()*.55)+'s');
+    particles.appendChild(p);
+  }
+
+  big.textContent = amount >= 100 ? 'BIG WIN! +' + Number(amount).toFixed(2) : 'WIN! +' + Number(amount).toFixed(2);
+  big.classList.remove('show');
+  void big.offsetWidth;
+  big.classList.add('show');
+
+  setTimeout(()=>{ particles.innerHTML=''; },1200);
+}
+
+/* Expose it so the existing game logic can call it if desired. */
+window.triggerWinEffects = triggerWinEffects;
+
 </script>
 </body>
 </html>
