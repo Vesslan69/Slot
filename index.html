@@ -313,7 +313,11 @@ reels.forEach((reel,c)=>{
   strip.style.transform='translate3d(0,0,0)';
   strip.innerHTML='';
 
-  const filler=25;
+  /* Extra symbols are part of the spinning strip. The final 3 symbols
+     are placed immediately after them, so the strip stops exactly with
+     those 3 rows visible inside the 300px reel window. */
+  const loops=turbo?7+c:11+c*2;
+  const filler=25+loops*3;
   for(let i=0;i<filler;i++){
     const cell=document.createElement('div');
     cell.className='symbol';
@@ -330,8 +334,8 @@ reels.forEach((reel,c)=>{
     strip.appendChild(cell);
   }
 
-  const loops=turbo?7+c:11+c*2;
-  const distance=(filler+loops*3)*cellH;
+  /* Stop exactly at the start of the three final result cells. */
+  const distance=filler*cellH;
 
   requestAnimationFrame(()=>{
     strip.style.transition='transform '+(base+c*150)+'ms cubic-bezier(.12,.8,.18,1)';
