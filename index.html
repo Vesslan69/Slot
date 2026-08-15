@@ -23,21 +23,18 @@ body{min-height:100vh;display:flex;justify-content:center}
 .stat{min-width:0;border:3px solid #9b691b;border-radius:16px;background:linear-gradient(145deg,#10202d,#02070d);padding:8px 5px;text-align:center;box-shadow:inset 0 0 14px rgba(0,0,0,.7)}
 .stat label{display:block;color:var(--gold);font-size:13px;font-weight:800;letter-spacing:.6px}
 .stat b{display:block;font-size:22px;margin-top:4px;white-space:nowrap}
-.controls{position:relative;height:126px;margin-top:7px;width:100%;display:flex;align-items:center;justify-content:center}
-.side{position:absolute;top:50%;transform:translateY(-50%);display:flex;gap:8px;align-items:center;z-index:4}
-.side.left{left:7px}.side.right{right:7px}
+ .controls{position:relative;height:126px;margin-top:7px;width:100%;display:grid;grid-template-columns:58px 58px 112px 58px 58px 58px;justify-content:center;align-items:center;column-gap:7px;padding:0 4px}
 .ctrl,.spin{border:2px solid var(--gold);background:radial-gradient(circle at 50% 35%,#162a39,#03080e 72%);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(246,184,46,.22),inset 0 0 10px rgba(255,255,255,.04);font-weight:900;user-select:none;-webkit-tap-highlight-color:transparent}
-.ctrl{width:58px;height:58px;font-size:28px}
-.spin{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:112px;height:112px;border-width:4px;background:radial-gradient(circle at 50% 45%,#126095 0%,#07517f 38%,#041a2a 70%);box-shadow:0 0 24px rgba(246,184,46,.55),inset 0 0 16px rgba(255,255,255,.1);font-size:63px;color:var(--gold2);z-index:5}
+.ctrl{position:static;width:58px;height:58px;font-size:28px}
+.spin{position:static;transform:none;width:112px;height:112px;border-width:4px;background:radial-gradient(circle at 50% 45%,#126095 0%,#07517f 38%,#041a2a 70%);box-shadow:0 0 24px rgba(246,184,46,.55),inset 0 0 16px rgba(255,255,255,.1);font-size:63px;color:var(--gold2);z-index:5}
 .spin::after{content:"";position:absolute;inset:7px;border:2px solid rgba(255,216,102,.7);border-radius:50%;pointer-events:none}
-.ctrl:active{transform:scale(.95)}.spin:active{transform:translate(-50%,-50%) scale(.95)}
+.ctrl:active{transform:scale(.95)}.spin:active{transform:scale(.95)}
 .message{height:34px;text-align:center;color:var(--gold2);font-weight:900;font-size:19px;text-shadow:0 2px 6px #000}
 .footer-space{height:80px;background:linear-gradient(#02070d,#000)}
-@media(max-width:430px){
+@media(max-width:430px){.controls{height:118px;grid-template-columns:54px 54px 104px 54px 54px 54px;column-gap:3px;padding:0 2px}
 .reel{height:282px}.symbol{height:94px;flex-basis:94px}
 .frame-foot{font-size:14px}.stats{gap:5px;margin-left:8px;margin-right:8px}
 .stat{padding:8px 3px;border-width:2px}.stat label{font-size:12px}.stat b{font-size:20px}
-.controls{height:118px}.side{gap:5px}.side.left{left:3px}.side.right{right:3px}
 .ctrl{width:54px;height:54px;font-size:25px}.spin{width:104px;height:104px;font-size:58px}
 }
 </style>
@@ -55,16 +52,12 @@ body{min-height:100vh;display:flex;justify-content:center}
 <div class="stat"><label>WIN</label><b id="win">0.00</b></div>
 </section>
 <section class="controls">
-<div class="side left">
-<button class="ctrl" id="soundBtn" onclick="toggleSound()" aria-label="Ljud">🔇</button>
-<button class="ctrl" onclick="changeBet(-1)" aria-label="Sänk insats">−</button>
-</div>
+<button class="ctrl sound-control" id="soundBtn" onclick="toggleSound()" aria-label="Ljud">🔇</button>
+<button class="ctrl minus-control" onclick="changeBet(-1)" aria-label="Sänk insats">−</button>
 <button class="spin" onclick="spin()" aria-label="Spin">↻</button>
-<div class="side right">
-<button class="ctrl" onclick="changeBet(1)" aria-label="Höj insats">+</button>
-<button class="ctrl" onclick="toggleTurbo()" aria-label="Turbo">ϟ</button>
-<button class="ctrl" onclick="toggleAuto()" aria-label="Auto">▶</button>
-</div>
+<button class="ctrl plus-control" onclick="changeBet(1)" aria-label="Höj insats">+</button>
+<button class="ctrl turbo-control" onclick="toggleTurbo()" aria-label="Turbo">ϟ</button>
+<button class="ctrl auto-control" onclick="toggleAuto()" aria-label="Auto">▶</button>
 </section>
 <div class="message" id="message">GOOD LUCK, WARRIOR!</div>
 <div class="footer-space"></div>
