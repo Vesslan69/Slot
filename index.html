@@ -149,6 +149,12 @@ column-gap:5px;
   50%{filter:drop-shadow(0 0 10px #ffd866) drop-shadow(0 0 20px #f6b82e)}
 }
 
+
+/* Stronger win presentation */
+.big-win{top:62%;z-index:100}
+.win-flash{z-index:90}
+.win-particles{z-index:91}
+
 </style>
 </head>
 <body>
@@ -211,7 +217,15 @@ requestAnimationFrame(()=>{strip.style.transition='transform '+(base+c*150)+'ms 
 setTimeout(()=>{
 const win=Math.random()<.34?Math.round((bet*(1+Math.random()*12))*100)/100:0;
 balance+=win;document.getElementById('balance').textContent=money(balance);document.getElementById('win').textContent=money(win);
-if(win>0){showMsg('WIN! +'+money(win));beep(720,.12);setTimeout(()=>beep(960,.15),100)}else{showMsg('NO WIN');beep(180,.08)}
+if(win>0){
+  showMsg('WIN! +'+money(win));
+  beep(720,.12);
+  setTimeout(()=>beep(960,.15),100);
+  triggerWinEffects(win);
+}else{
+  showMsg('NO WIN');
+  beep(180,.08);
+}
 spinning=false;if(auto)autoTimer=setTimeout(spin,turbo?250:650)},base+4*150+150)}
 buildReels();
 
