@@ -185,10 +185,30 @@ column-gap:5px;
   100%{opacity:0}
 }
 
+
+/* Reliable win FX layer */
+.win-flash.active{
+  animation:screenWin .8s ease-out forwards !important;
+}
+.big-win{
+  top:74% !important;
+  font-size:clamp(30px,8vw,52px);
+  text-align:center;
+}
+.win-particle{
+  width:9px;
+  height:9px;
+  border-radius:2px;
+  will-change:transform,opacity;
+}
+
 </style>
 </head>
 <body>
 <main class="game">
+<div class="win-flash" id="winFlash"></div>
+<div class="win-particles" id="winParticles"></div>
+<div class="big-win" id="bigWin"></div>
 <header class="header"><button class="header-hit" aria-label="Meny" onclick="showMsg('MENU')"></button></header>
 <section class="reel-box" id="reelBox">
 <div class="reels" id="reels"></div><div class="payline-trace" id="paylineTrace"></div>
@@ -410,34 +430,58 @@ buildReels();
 
 /* === WIN FX === */
 function triggerWinEffects(amount){
-  const flash = document.getElementById('winFlash');
-  const particles = document.getElementById('winParticles');
-  const big = document.getElementById('bigWin');
-  if(!flash || !particles || !big) return;
+  const flash=document.getElementById('winFlash');
+  const particles=document.getElementById('winParticles');
+  const big=document.getElementById('bigWin');
+  if(!flash||!particles||!big)return;
 
+  /* Screen flash */
   flash.classList.remove('active');
   void flash.offsetWidth;
   flash.classList.add('active');
 
-  particles.innerHTML = '';
-  const count = amount >= 100 ? 34 : amount >= 50 ? 24 : 14;
-  for(let i=0;i<count;i++){
-    const p=document.createElement('span');
-    p.className='win-particle';
-    p.style.left=(42+Math.random()*16)+'%';
-    p.style.top=(43+Math.random()*20)+'%';
-    p.style.setProperty('--dx',((Math.random()-.5)*90)+'vw');
-    p.style.setProperty('--dy',((Math.random()-.72)*55)+'vh');
-    p.style.setProperty('--dur',(0.55+Math.random()*.55)+'s');
-    particles.appendChild(p);
-  }
-
-  big.textContent = amount >= 100 ? 'BIG WIN! +' + Number(amount).toFixed(2) : 'WIN! +' + Number(amount).toFixed(2);
+  /* Big win text */
+  big.textContent=amount>=100
+    ? 'BIG WIN! +'+Number(amount).toFixed(2)
+    : 'WIN! +'+Number(amount).toFixed(2);
   big.classList.remove('show');
   void big.offsetWidth;
   big.classList.add('show');
 
-  setTimeout(()=>{ particles.innerHTML=''; },1200);
+  /* Gold particles */
+  particles.innerHTML='';
+  const count=amount>=100?48:amount>=50?34:24;
+
+  for(let i=0;i<count;i++){
+    const particle=document.createElement('span');
+    particle.className='win-particle';
+
+    const angle=Math.random()*Math.PI*2;
+    const distance=120+Math.random()*260;
+
+    particle.style.left='50%';
+    particle.style.top='72%';
+    particle.style.setProperty('--dx',Math.cos(angle)*distance+'px');
+    particle.style.setProperty('--dy',Math.sin(angle)*distance+'px');
+    particle.style.setProperty('--dur',(0.7+Math.random()*0.7)+'s');
+
+    particles.appendChild(particle);
+  }
+
+  /* Make the spin button glow during a win. */
+  const spinButton=document.querySelector('.spin');
+  if(spinButton){
+    spinButton.classList.remove('win-glow');
+    void spinButton.offsetWidth;
+    spinButton.classList.add('win-glow');
+    setTimeout(()=>spinButton.classList.remove('win-glow'),1700);
+  }
+
+  setTimeout(()=>{
+    particles.innerHTML='';
+    flash.classList.remove('active');
+    big.classList.remove('show');
+  },1800);
 }
 
 /* Expose it so the existing game logic can call it if desired. */
