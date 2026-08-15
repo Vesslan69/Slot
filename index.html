@@ -155,13 +155,43 @@ column-gap:5px;
 .win-flash{z-index:90}
 .win-particles{z-index:91}
 
+
+.symbol.payline-win{
+  position:relative;
+  z-index:4;
+  box-shadow:inset 0 0 0 3px #ffd866, 0 0 18px rgba(255,200,40,.95);
+  animation:paylinePulse .55s ease-in-out 3;
+}
+@keyframes paylinePulse{
+  0%,100%{filter:none;transform:scale(1)}
+  50%{filter:brightness(1.35);transform:scale(1.025)}
+}
+.payline-trace{
+  position:absolute;
+  left:4%;
+  right:4%;
+  height:4px;
+  background:#ffd866;
+  box-shadow:0 0 10px #ffb300,0 0 20px #ffd866;
+  z-index:6;
+  pointer-events:none;
+  opacity:0;
+}
+.payline-trace.show{animation:traceFlash .9s ease-out forwards}
+@keyframes traceFlash{
+  0%{opacity:0;transform:scaleX(.2)}
+  25%{opacity:1;transform:scaleX(1)}
+  80%{opacity:1}
+  100%{opacity:0}
+}
+
 </style>
 </head>
 <body>
 <main class="game">
 <header class="header"><button class="header-hit" aria-label="Meny" onclick="showMsg('MENU')"></button></header>
-<section class="reel-box">
-<div class="reels" id="reels"></div>
+<section class="reel-box" id="reelBox">
+<div class="reels" id="reels"></div><div class="payline-trace" id="paylineTrace"></div>
 <div class="frame-foot"><span>10 LINES</span><span>NORDIC WARRIOR</span><span>10 LINES</span></div>
 </section>
 <section class="stats">
@@ -207,26 +237,175 @@ function toggleAuto(){auto=!auto;showMsg(auto?'AUTO ON':'AUTO OFF');if(auto)spin
 function spin(){
 if(spinning)return;
 if(balance<bet){showMsg('NOT ENOUGH BALANCE');beep(120,.15);return}
-spinning=true;balance-=bet;document.getElementById('balance').textContent=money(balance);document.getElementById('win').textContent='0.00';
-showMsg('SPINNING...');beep(180,.09,'sawtooth');
-const strips=[...document.querySelectorAll('.strip')],cellH=strips[0].querySelector('.symbol').getBoundingClientRect().height,base=turbo?540:900;
-strips.forEach((strip,c)=>{
-strip.style.transition='none';strip.style.transform='translate3d(0,0,0)';
-const loops=14+c*3,stop=Math.floor(Math.random()*15)*cellH;
-requestAnimationFrame(()=>{strip.style.transition='transform '+(base+c*150)+'ms cubic-bezier(.12,.8,.18,1)';strip.style.transform='translate3d(0,-'+(loops*cellH+stop)+'px,0)'})});
-setTimeout(()=>{
-const win=Math.random()<.34?Math.round((bet*(1+Math.random()*12))*100)/100:0;
-balance+=win;document.getElementById('balance').textContent=money(balance);document.getElementById('win').textContent=money(win);
-if(win>0){
-  showMsg('WIN! +'+money(win));
-  beep(720,.12);
-  setTimeout(()=>beep(960,.15),100);
-  triggerWinEffects(win);
-}else{
-  showMsg('NO WIN');
-  beep(180,.08);
+
+spinning=true;
+balance-=bet;
+document.getElementById('balance').textContent=money(balance);
+document.getElementById('win').textContent='0.00';
+showMsg('SPINNING...');
+beep(180,.09,'sawtooth');
+
+const root=document.getElementById('reels');
+const reels=[...root.querySelectorAll('.reel')];
+const cellH=reels[0].querySelector('.symbol').getBoundingClientRect().height;
+const base=turbo?540:900;
+
+/* Image indexes in the supplied Nordic Warrior symbol set:
+   0 wolf, 1 chest, 2 horn, 3 bonus, 4 helmet,
+   5 axe, 6 K, 7 scatter, 9 wild, 13 9, 14 warrior.
+*/
+const pool=[0,1,2,4,5,6,7,9,13,14];
+
+/* Standard 10 paylines, expressed as row indexes (0=top, 1=middle, 2=bottom). */
+const paylines=[
+ [1,1,1,1,1],
+ [0,0,0,0,0],
+ [2,2,2,2,2],
+ [0,1,2,1,0],
+ [2,1,0,1,2],
+ [0,0,1,2,2],
+ [2,2,1,0,0],
+ [1,0,0,0,1],
+ [1,2,2,2,1],
+ [1,1,0,1,1]
+];
+
+/* Build a fresh 5x3 result grid. */
+const grid=Array.from({length:5},()=>Array(3).fill(0));
+for(let c=0;c<5;c++){
+  for(let r=0;r<3;r++) grid[c][r]=pool[Math.floor(Math.random()*pool.length)];
 }
-spinning=false;if(auto)autoTimer=setTimeout(spin,turbo?250:650)},base+4*150+150)}
+
+/* Usually create a real left-to-right win so the displayed WIN always
+   corresponds to symbols actually visible on the reels. */
+if(Math.random()<0.36){
+  const line=paylines[Math.floor(Math.random()*paylines.length)];
+  const sym=pool[Math.floor(Math.random()*pool.length)];
+  const count=3+Math.floor(Math.random()*3); // 3, 4 or 5 matching reels
+  for(let c=0;c<count;c++) grid[c][line[c]]=sym;
+}
+
+/* Rebuild each reel so its final three cells are exactly the result grid.
+   The reels still spin for different durations. */
+reels.forEach((reel,c)=>{
+  const strip=reel.querySelector('.strip');
+  strip.style.transition='none';
+  strip.style.transform='translate3d(0,0,0)';
+  strip.innerHTML='';
+
+  const filler=25;
+  for(let i=0;i<filler;i++){
+    const cell=document.createElement('div');
+    cell.className='symbol';
+    cell.style.backgroundImage='url("data:image/jpeg;base64,'+images[pool[Math.floor(Math.random()*pool.length)]]+'")';
+    strip.appendChild(cell);
+  }
+
+  for(let r=0;r<3;r++){
+    const cell=document.createElement('div');
+    cell.className='symbol';
+    cell.dataset.col=c;
+    cell.dataset.row=r;
+    cell.style.backgroundImage='url("data:image/jpeg;base64,'+images[grid[c][r]]+'")';
+    strip.appendChild(cell);
+  }
+
+  const loops=turbo?7+c:11+c*2;
+  const distance=(filler+loops*3)*cellH;
+
+  requestAnimationFrame(()=>{
+    strip.style.transition='transform '+(base+c*150)+'ms cubic-bezier(.12,.8,.18,1)';
+    strip.style.transform='translate3d(0,-'+distance+'px,0)';
+  });
+});
+
+setTimeout(()=>{
+  /* Evaluate only paylines that start on reel 1 and continue consecutively
+     left -> right. No win can begin on reel 2, 3, 4 or 5. */
+  let totalWin=0;
+  const winningLines=[];
+
+  const value={
+    0:[3,10,30],   // wolf
+    1:[2,6,18],    // chest
+    2:[2,5,15],    // horn
+    4:[2,5,14],    // helmet
+    5:[2,5,12],    // axe
+    6:[1.5,4,10],  // K
+    7:[2,6,18],    // scatter
+    9:[3,9,25],    // wild
+    13:[1.5,4,10], // 9
+    14:[4,12,35]   // warrior
+  };
+
+  paylines.forEach((line,lineIndex)=>{
+    const first=grid[0][line[0]];
+    let count=1;
+
+    /* Scatter is handled separately; regular line wins need
+       the same symbol on consecutive reels from the left. */
+    if(first===7)return;
+
+    for(let c=1;c<5;c++){
+      if(grid[c][line[c]]===first) count++;
+      else break;
+    }
+
+    if(count>=3){
+      const mult=(value[first]||[1,3,8])[count-3] || (value[first]||[1,3,8])[2];
+      const amount=Math.round(bet*mult*100)/100;
+      totalWin+=amount;
+      winningLines.push({line:lineIndex,rows:line,count,amount});
+    }
+  });
+
+  /* Scatter bonus: 3+ scatters anywhere, but it does not replace
+     the left-to-right line rule for normal symbol wins. */
+  let scatterCount=0;
+  for(let c=0;c<5;c++)for(let r=0;r<3;r++)if(grid[c][r]===7)scatterCount++;
+  if(scatterCount>=3){
+    const scatterWin=Math.round(bet*([0,0,2,5,12,25][Math.min(scatterCount,5)])*100)/100;
+    totalWin+=scatterWin;
+  }
+
+  /* Highlight every actual winning cell on the visible final result. */
+  document.querySelectorAll('.payline-win').forEach(el=>el.classList.remove('payline-win'));
+  winningLines.forEach(w=>{
+    for(let c=0;c<w.count;c++){
+      const cell=reels[c].querySelectorAll('.symbol')[25+w.rows[c]];
+      if(cell)cell.classList.add('payline-win');
+    }
+  });
+
+  const trace=document.getElementById('paylineTrace');
+  if(trace && winningLines.length){
+    const firstLine=winningLines[0].rows;
+    const midRow=firstLine[0];
+    trace.style.top=(25+midRow*100+50)+'px';
+    trace.classList.remove('show');
+    void trace.offsetWidth;
+    trace.classList.add('show');
+  }
+
+  const win=Math.round(totalWin*100)/100;
+  balance+=win;
+  document.getElementById('balance').textContent=money(balance);
+  document.getElementById('win').textContent=money(win);
+
+  if(win>0){
+    showMsg('WIN! +'+money(win));
+    beep(720,.12);
+    setTimeout(()=>beep(960,.15),100);
+    triggerWinEffects(win);
+  }else{
+    showMsg('NO WIN');
+    beep(180,.08);
+  }
+
+  spinning=false;
+  if(auto)autoTimer=setTimeout(spin,turbo?250:650);
+},base+4*150+250);
+}
 buildReels();
 
 /* === WIN FX === */
