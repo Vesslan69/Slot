@@ -202,6 +202,34 @@ column-gap:5px;
   will-change:transform,opacity;
 }
 
+
+/* Extra game effects */
+.reel.reel-stop{animation:reelStop .28s ease-out}
+@keyframes reelStop{
+  0%{filter:brightness(1)}
+  45%{filter:brightness(1.65)}
+  100%{filter:brightness(1)}
+}
+.game.win-shake{animation:gameShake .42s ease-out}
+@keyframes gameShake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-4px)}
+  40%{transform:translateX(4px)}
+  60%{transform:translateX(-3px)}
+  80%{transform:translateX(2px)}
+}
+.win-particle{
+  background:radial-gradient(circle,#fff8c7 0 18%,#ffd866 35%,#f6a900 100%) !important;
+  box-shadow:0 0 8px #ffd866,0 0 18px rgba(255,190,40,.9) !important;
+}
+.scatter-hit{
+  animation:scatterHit .7s ease-in-out 2;
+}
+@keyframes scatterHit{
+  0%,100%{filter:none}
+  50%{filter:brightness(1.7) drop-shadow(0 0 14px #b46cff)}
+}
+
 </style>
 </head>
 <body>
@@ -364,22 +392,64 @@ setTimeout(()=>{
 
   paylines.forEach((line,lineIndex)=>{
     const first=grid[0][line[0]];
-    let count=1;
 
-    /* Scatter is handled separately; regular line wins need
-       the same symbol on consecutive reels from the left. */
+    /* Scatter is a separate feature and never acts as a normal line symbol. */
     if(first===7)return;
 
-    for(let c=1;c<5;c++){
-      if(grid[c][line[c]]===first) count++;
-      else break;
+    /* Wild substitutes for any regular symbol.
+       A line must still start on reel 1 and continue left -> right. */
+    const target = first===9 ? null : first;
+    let count=0;
+
+    for(let c=0;c<5;c++){
+      const s=grid[c][line[c]];
+
+      if(c===0){
+        if(s===7)break;
+        if(s===9){
+          /* A wild on the first reel can become the best matching
+             regular symbol from the next reel. */
+          count=1;
+          continue;
+        }
+        count=1;
+        continue;
+      }
+
+      if(s===7)break;
+
+      if(target===null){
+        /* First symbol was Wild: adopt the first non-wild symbol. */
+        if(s!==9) {
+          count++;
+        } else {
+          count++;
+        }
+      }else if(s===target || s===9){
+        count++;
+      }else{
+        break;
+      }
     }
 
     if(count>=3){
-      const mult=(value[first]||[1,3,8])[count-3] || (value[first]||[1,3,8])[2];
+      let symbolForPay = target;
+      if(symbolForPay===null){
+        for(let c=1;c<count;c++){
+          const s=grid[c][line[c]];
+          if(s!==9){symbolForPay=s;break;}
+        }
+      }
+
+      const mult=(value[symbolForPay]||[1,3,8])[Math.min(count-3,2)];
       const amount=Math.round(bet*mult*100)/100;
       totalWin+=amount;
-      winningLines.push({line:lineIndex,rows:line,count,amount});
+      winningLines.push({
+        line:lineIndex,
+        rows:line,
+        count,
+        amount
+      });
     }
   });
 
@@ -396,7 +466,9 @@ setTimeout(()=>{
   document.querySelectorAll('.payline-win').forEach(el=>el.classList.remove('payline-win'));
   winningLines.forEach(w=>{
     for(let c=0;c<w.count;c++){
-      const cell=reels[c].querySelectorAll('.symbol')[25+w.rows[c]];
+      const cells=reels[c].querySelectorAll('.symbol');
+      const finalIndex=cells.length-3+w.rows[c];
+      const cell=cells[finalIndex];
       if(cell)cell.classList.add('payline-win');
     }
   });
@@ -437,14 +509,23 @@ function triggerWinEffects(amount){
   const flash=document.getElementById('winFlash');
   const particles=document.getElementById('winParticles');
   const big=document.getElementById('bigWin');
+  const game=document.querySelector('.game');
   if(!flash||!particles||!big)return;
 
-  /* Screen flash */
+  /* Full-screen golden flash. */
   flash.classList.remove('active');
   void flash.offsetWidth;
   flash.classList.add('active');
 
-  /* Big win text */
+  /* Shake the game very briefly. */
+  if(game){
+    game.classList.remove('win-shake');
+    void game.offsetWidth;
+    game.classList.add('win-shake');
+    setTimeout(()=>game.classList.remove('win-shake'),500);
+  }
+
+  /* Large win callout. */
   big.textContent=amount>=100
     ? 'BIG WIN! +'+Number(amount).toFixed(2)
     : 'WIN! +'+Number(amount).toFixed(2);
@@ -452,27 +533,31 @@ function triggerWinEffects(amount){
   void big.offsetWidth;
   big.classList.add('show');
 
-  /* Gold particles */
+  /* Gold burst. */
   particles.innerHTML='';
-  const count=amount>=100?48:amount>=50?34:24;
-
+  const count=amount>=100?64:amount>=50?44:28;
   for(let i=0;i<count;i++){
     const particle=document.createElement('span');
     particle.className='win-particle';
-
     const angle=Math.random()*Math.PI*2;
-    const distance=120+Math.random()*260;
-
+    const distance=100+Math.random()*330;
     particle.style.left='50%';
-    particle.style.top='72%';
+    particle.style.top='70%';
     particle.style.setProperty('--dx',Math.cos(angle)*distance+'px');
     particle.style.setProperty('--dy',Math.sin(angle)*distance+'px');
-    particle.style.setProperty('--dur',(0.7+Math.random()*0.7)+'s');
-
+    particle.style.setProperty('--dur',(0.65+Math.random()*0.9)+'s');
     particles.appendChild(particle);
   }
 
-  /* Make the spin button glow during a win. */
+  /* Winning symbols pulse again after the result is shown. */
+  document.querySelectorAll('.payline-win').forEach((el,i)=>{
+    setTimeout(()=>{
+      el.classList.remove('payline-win');
+      void el.offsetWidth;
+      el.classList.add('payline-win');
+    },i*55);
+  });
+
   const spinButton=document.querySelector('.spin');
   if(spinButton){
     spinButton.classList.remove('win-glow');
@@ -485,7 +570,7 @@ function triggerWinEffects(amount){
     particles.innerHTML='';
     flash.classList.remove('active');
     big.classList.remove('show');
-  },1800);
+  },1900);
 }
 
 /* Expose it so the existing game logic can call it if desired. */
