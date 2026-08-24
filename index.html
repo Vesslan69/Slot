@@ -301,13 +301,17 @@ column-gap:5px;
 .big-win{z-index:111!important}
 .win-counter{z-index:112!important}
 
+
+.free-spin-badge{position:absolute;left:50%;top:34%;transform:translate(-50%,-50%) scale(.5);z-index:113;pointer-events:none;opacity:0;color:#f5d7ff;font-weight:1000;font-size:clamp(22px,6vw,42px);text-align:center;white-space:nowrap;text-shadow:0 0 5px #16001f,0 0 12px #b05cff,0 0 28px #7a20ff}
+.free-spin-badge.show{animation:freeSpinReveal 1.7s ease-out forwards}
+@keyframes freeSpinReveal{0%{opacity:0;transform:translate(-50%,-50%) scale(.45) rotate(-4deg)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.12) rotate(1deg)}35%{transform:translate(-50%,-50%) scale(.96)}65%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.03)}}
 </style>
 </head>
 <body>
 <main class="game">
 <div class="win-flash" id="winFlash"></div>
 <div class="win-particles" id="winParticles"></div>
-<div class="big-win" id="bigWin"></div>
+<div class="big-win" id="bigWin"></div><div class="free-spin-badge" id="freeSpinBadge"></div>
 <div class="celebration-rays" id="celebrationRays"></div>
 <div class="celebration-stars" id="celebrationStars"></div>
 <div class="win-coins" id="winCoins"></div>
@@ -361,7 +365,7 @@ if(spinning)return;
 if(balance<bet){showMsg('NOT ENOUGH BALANCE');beep(120,.15);return}
 
 spinning=true;
-balance-=bet;
+if(freeSpins<=0){ balance-=bet; }
 document.getElementById('balance').textContent=money(balance);
 document.getElementById('win').textContent='0.00';
 showMsg('SPINNING...');
@@ -372,7 +376,7 @@ const reels=[...root.querySelectorAll('.reel')];
 const cellH=reels[0].querySelector('.symbol').getBoundingClientRect().height;
 const base=turbo?540:900;
 
-const pool=[0,1,2,4,5,6,7,9,13,14];
+const pool=freeSpins>0 ? [0,1,2,4,5,6,7,9,9,13,14] : [0,1,2,4,5,6,7,9,13,14];
 const paylines=[
  [1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],
  [0,0,1,2,2],[2,2,1,0,0],[1,0,0,0,1],[1,2,2,2,1],[1,1,0,1,1]
@@ -453,10 +457,10 @@ setTimeout(()=>{
     winningLines.push({line:winningLineIndex,rows:[...line],count:winningCount,amount,symbol:winningSymbol});
   }
 
-  /* Scatter symbols are decorative unless they are the actual paid outcome.
-     This keeps the RTP model deterministic and prevents hidden extra payouts. */
+  /* Scatter feature: 3+ Scatters anywhere trigger Free Spins. */
   let scatterCount=0;
-  for(let c=0;c<5;c++) for(let r=0;r<3;r++) if(grid[c][r]===7) scatterCount++;
+  for(let c=0;c<5;c++){ for(let r=0;r<3;r++){ if(grid[c][r]===7) scatterCount++; } }
+  const triggeredFreeSpins = scatterCount>=5 ? 25 : scatterCount===4 ? 15 : scatterCount===3 ? 10 : 0;
 
   document.querySelectorAll('.payline-win').forEach(el=>{
     el.classList.remove('payline-win');el.style.removeProperty('--win-delay');
@@ -492,6 +496,14 @@ setTimeout(()=>{
   }
 
   const win=Math.round(totalWin*100)/100;
+
+  if(triggeredFreeSpins>0){
+    freeSpins += triggeredFreeSpins;
+    const badge=document.getElementById('freeSpinBadge');
+    if(badge){ badge.textContent='FREE SPINS! +'+triggeredFreeSpins; badge.classList.remove('show'); void badge.offsetWidth; badge.classList.add('show'); }
+  }
+  if(freeSpins>0) freeSpins--;
+
   balance+=win;
   document.getElementById('balance').textContent=money(balance);
   document.getElementById('win').textContent=money(win);
@@ -524,6 +536,7 @@ function triggerWinEffects(amount, winningLines=[], scatterCount=0){
   flash.classList.remove('active'); void flash.offsetWidth; flash.classList.add('active');
   if(game){game.classList.remove('win-shake');void game.offsetWidth;game.classList.add('win-shake');setTimeout(()=>game.classList.remove('win-shake'),520)}
   if(rays){rays.classList.remove('show');void rays.offsetWidth;rays.classList.add('show')}
+  if(scatterCount>=3){ const badge=document.getElementById('freeSpinBadge'); if(badge){ badge.textContent='FREE SPINS!'; badge.classList.remove('show'); void badge.offsetWidth; badge.classList.add('show'); } }
 
   big.textContent=megaWin?'MEGA WIN!':bigWin?'BIG WIN!':'WIN!';
   big.classList.remove('show');void big.offsetWidth;big.classList.add('show');
